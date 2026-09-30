@@ -63,6 +63,3 @@ Puoi avviare il progetto facilmente clonando la repository e utilizzando il Mave
 
 ## 💾 Gestione dei Dati (File `.ser`)
 L'applicazione crea e utilizza dei file `.ser` (es. `User.ser`, `ActualUser.ser`, `History.ser`) posizionati nella root del progetto per memorizzare localmente lo stato dell'applicazione, gli account registrati e le ricerche passate. Se desideri resettare completamente l'applicazione, ti basterà eliminare questi file.
-
----
-*Sviluppato con passione per l'esplorazione del mondo.* 🌎
