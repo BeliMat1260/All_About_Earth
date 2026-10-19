@@ -92,6 +92,7 @@ public class Login extends Application {
         loginButton.setOnMouseExited(e -> loginButton.setStyle("-fx-background-color: #3498DB; -fx-border-radius: 10; " +
                 "-fx-background-radius: 10; -fx-padding: 12 30; -fx-font-size: 20px;"));
 
+        passwordField.setOnAction(e -> handLogin(stage));
         loginButton.setOnAction(e-> handLogin(stage));
 
         //Label di errore

@@ -104,6 +104,11 @@ public class Illustration extends Application {
             }
         } else if (api.getWrittenSpeech() == null) {
             api.sendPrompt();
+            if (api.getWrittenSpeech() == null) {
+                stage.close();
+                home.start(new Stage());
+                return;
+            }
             formattedText = api.getWrittenSpeech().replace("**", "").replace("*  ", "").trim();
         } else {
             formattedText = api.getWrittenSpeech().replace("**", "").replace("*  ", "").trim();

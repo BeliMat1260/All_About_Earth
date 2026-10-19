@@ -19,25 +19,23 @@ L'applicazione è strutturata con un'architettura solida basata su Manager e Mod
 * **Build System:** Maven (`pom.xml`, `mvnw`)
 * **Dati & Serializzazione:** Java Object Serialization (`.ser` files)
 
-## 🔑 Configurazione API Key (Fondamentale)
+## Chiavi API
 
-Per permettere all'applicazione di comunicare con i server esterni e recuperare i dati del mondo (es. coordinate, meteo, mappe), **devi inserire una API Key valida**. 
+Le chiavi non stanno nel codice. Prima di avviare l'app imposta le variabili d'ambiente:
 
-Senza questa chiave, le funzionalità di ricerca e i menu delle location (`Search.java`, `LocationsMenu.java`) genereranno errori di connessione.
+* `MAPS_API_KEY` per Google Maps
+* `GEMINI_API_KEY` per il testo
+* `ELEVENLABS_API_KEY` per l'audio
 
-**Come configurare la chiave:**
+Su Windows, in PowerShell:
 
-1. Ottieni una chiave API dal provider utilizzato dal progetto (es. Google Maps API, OpenWeatherMap, Mapbox o simili).
-2. Apri il file sorgente dedicato alle chiamate di rete:
-   `src/main/java/com/example/all_about_earth_/API/API.java`
-3. Cerca la costante o la variabile dedicata alla chiave (spesso chiamata `API_KEY` o `TOKEN`) e sostituisci la stringa vuota o il placeholder con la tua chiave reale.
-   
-   *Esempio:*
-   ```java
-   // All'interno di API.java
-   private static final String API_KEY = "INSERISCI_QUI_LA_TUA_CHIAVE_API";
-   ```
-4. *Nota di sicurezza:* Ricordati di aggiungere eventuali file di configurazione locale al tuo `.gitignore` se decidi di spostare la chiave in un file `.env` o `.properties` per non esporla pubblicamente su GitHub!
+```powershell
+$env:MAPS_API_KEY = "la-tua-chiave"
+$env:GEMINI_API_KEY = "la-tua-chiave"
+$env:ELEVENLABS_API_KEY = "la-tua-chiave"
+```
+
+Se una chiave è già finita in una commit precedente, va revocata dal fornitore e ricreata. I file `User.ser`, `ActualUser.ser` e `History.ser` restano solo in locale.
 
 ## 📁 Struttura del Progetto
 
@@ -67,18 +65,21 @@ Il progetto utilizza **Maven Wrapper**, quindi non hai bisogno di avere Maven pr
    cd All_About_Earth
    ```
 
-2. **Configura le API Key:** 
-   (Vedi la sezione *Configurazione API Key* qui sopra).
+2. **Imposta le variabili d'ambiente** delle tre chiavi, come nella sezione sopra.
 
-3. **Compila ed esegui l'app:**
+3. **Compila, testa ed esegui:**
    Su **Windows**:
    ```cmd
-   mvnw.cmd clean javafx:run
+   mvnw.cmd test
+   mvnw.cmd javafx:run
    ```
    Su **macOS / Linux**:
    ```bash
-   ./mvnw clean javafx:run
+   ./mvnw test
+   ./mvnw javafx:run
    ```
+
+Il primo avvio crea l'utente `Utente` con password `prova` e non cancella un file utenti già presente. Invio nel campo password esegue il login. Il pulsante casuale imposta sia latitudine sia longitudine.
 
 ---
 *Progetto sviluppato a scopo didattico / accademico.*
