@@ -114,17 +114,8 @@ public class Search extends Application {
         searchStage.setScene(scene);
         searchStage.setResizable(false);
         searchStage.initModality(Modality.APPLICATION_MODAL);
-
-        // Posizionamento in base alle dimensioni dello schermo
-        if (screenWidth == 1920.0 && screenEight == 1032.0) {
-            searchStage.setX(1700);
-            searchStage.setY(650);
-        } else {
-            // TODO: Aggiungere ulteriori condizioni per altre risoluzioni
-            searchStage.setX(1300);
-            searchStage.setY(630);
-        }
-
+        searchStage.setX(Math.max(0, (screenWidth - 300) / 2));
+        searchStage.setY(Math.max(0, (screenEight - 100) / 2));
         searchStage.show();
     }
 }

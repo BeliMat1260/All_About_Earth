@@ -8,24 +8,25 @@ import java.util.ArrayList;
 
 //todo:aggiungere controllo email
 public class LoginManager {
-    private File f = new File("User.ser");
+    private final File f;
     private ArrayList<User> users = new ArrayList<>();
 
-    public void createFile(){
-        try {
-            if(!f.createNewFile()){
-                FileOutputStream fos = new FileOutputStream(f);
-                ObjectOutputStream oos = new ObjectOutputStream(fos);
+    public LoginManager() {
+        this(new File("User.ser"));
+    }
 
-                User user = new User("Utente","prova");
-                users.add(user);
+    public LoginManager(File file) {
+        this.f = file;
+    }
 
-                oos.writeObject(users);
-                oos.flush();
-
-                fos.close();
-                oos.close();
-            }
+    public void createFile() {
+        if (f.exists() && f.length() > 0) {
+            return;
+        }
+        users = new ArrayList<>();
+        users.add(new User("Utente", "prova"));
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f))) {
+            oos.writeObject(users);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -45,13 +46,13 @@ public class LoginManager {
         return false;
     }
 
-    public void readFile(){
-        try {
-            FileInputStream fis = new FileInputStream(f);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-
+    public void readFile() {
+        if (!f.exists() || f.length() == 0) {
+            users = new ArrayList<>();
+            return;
+        }
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
             users = (ArrayList<User>) ois.readObject();
-
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException ignored) {

@@ -20,9 +20,9 @@ import java.nio.charset.StandardCharsets;
 
 public class API {
 
-    private final static String MAPS_API_KEY = "";
-    private static final String GEMINI_API_KEY = "";
-    private static final String ELEVENLABS_API_KEY = "";
+    private static final String MAPS_API_KEY = chiave("MAPS_API_KEY");
+    private static final String GEMINI_API_KEY = chiave("GEMINI_API_KEY");
+    private static final String ELEVENLABS_API_KEY = chiave("ELEVENLABS_API_KEY");
     private double latitude, longitude;
     private String writtenSpeech;
     private ByteArrayInputStream spokenSpeech;
@@ -40,7 +40,26 @@ public class API {
 
     public API() {}
 
+    private static String chiave(String nome) {
+        return EnvFile.valore(nome);
+    }
+
+    private boolean chiaveMancante(String chiave, String nome) {
+        if (!chiave.isEmpty()) {
+            return false;
+        }
+        placeFound = false;
+        try {
+            new Error("Manca " + nome + " nel file .env.").start(new Stage());
+        } catch (Exception ignored) {
+        }
+        return true;
+    }
+
     public void sendPrompt() {
+            if (chiaveMancante(GEMINI_API_KEY, "GEMINI_API_KEY")) {
+                return;
+            }
 
             OkHttpClient httpClient = new OkHttpClient();
             try {
@@ -80,9 +99,8 @@ public class API {
 
                 try (Response response = httpClient.newCall(request).execute()) {
                     if (!response.isSuccessful()) {
-                        System.out.println("Errore nella richiesta: " + response.code());
-                        Error error = new Error("Errore nella richiesta");
-                        error.start(new Stage());
+                        new Error("Errore nella richiesta a Gemini (" + response.code() + ").").start(new Stage());
+                        return;
                     }
 
                     assert response.body() != null;
@@ -118,9 +136,11 @@ public class API {
 
     //Se è un luogo sconosciuto ritorna false
     public boolean getPlaceNameFromCoordinates() {
+        if (chiaveMancante(MAPS_API_KEY, "MAPS_API_KEY")) {
+            return false;
+        }
         try {
             String urlString = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + latitude + "," + longitude + "&key=" + MAPS_API_KEY;
-            System.out.println(urlString);
             URL url = new URL(urlString);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -134,83 +154,24 @@ public class API {
             }
             in.close();
 
-            JsonObject jsonObject = JsonParser.parseString(response.toString()).getAsJsonObject();
-            JsonArray results = jsonObject.getAsJsonArray("results");
-
-            if (results.isEmpty()) {
+            place_name = GeocodeParser.nome(response.toString());
+            if (place_name == null) {
                 place_name = "Luogo sconosciuto";
                 placeFound = false;
                 return false;
             }
 
-            // Estrai informazioni da tutti i risultati per trovare il miglior match
-            String cityName = null;
-            String subLocality = null;
-            String formattedAddress = null;
-
-            // Cerca attraverso i risultati per trovare il migliore per rappresentare la città
-            for (JsonElement result : results) {
-                JsonObject resultObj = result.getAsJsonObject();
-
-                // Salva il formatted_address dal primo risultato come fallback
-                if (formattedAddress == null) {
-                    formattedAddress = resultObj.get("formatted_address").getAsString();
-                }
-
-                JsonArray addressComponents = resultObj.getAsJsonArray("address_components");
-
-                // Cerca componenti specifici per la città
-                for (JsonElement component : addressComponents) {
-                    JsonObject componentObj = component.getAsJsonObject();
-                    JsonArray types = componentObj.getAsJsonArray("types");
-                    String longName = componentObj.get("long_name").getAsString();
-
-                    for (JsonElement type : types) {
-                        String typeStr = type.getAsString();
-
-                        // Priorità alla località (città)
-                        if (typeStr.equals("locality")) {
-                            cityName = longName;
-                        }
-                        // Se non troviamo una località, consideriamo un sotto-località
-                        else if (typeStr.equals("sublocality") || typeStr.equals("sublocality_level_1")) {
-                            subLocality = longName;
-                        }
-                        // Se non abbiamo trovato località o sotto-località, consideriamo l'area amministrativa
-                        else if (cityName == null && subLocality == null && (typeStr.equals("administrative_area_level_3") || typeStr.equals("administrative_area_level_2"))) {
-                            cityName = longName;
-                        }
-                    }
-                }
-
-                // Se abbiamo trovato una città, usciamo dal ciclo
-                if (cityName != null) {
-                    break;
-                }
-            }
-
-            // Usa il formatted_address se non abbiamo trovato una città o sotto-località
-            if (cityName == null && subLocality == null) {
-                place_name = formattedAddress;
-                getPlaceId();
-            } else {
-                // Usa il nome della città se disponibile, altrimenti sotto-località
-                place_name = (cityName != null) ? cityName : subLocality;
-                // Aggiungi il paese se presente nel formatted_address
-                if (formattedAddress != null && formattedAddress.contains(", ")) {
-                    String country = formattedAddress.substring(formattedAddress.lastIndexOf(", ") + 2);
-                    place_name += ", " + country;
-                }
-                getPlaceId();
-            }
-
-            System.out.println("Luogo estratto: " + place_name);
             if (place_name.contains("+")){
                 Error error = new Error("Hai selezionato un luogo non disponibile");
                 error.start(new Stage());
                 return false;
             }
+            getPlaceId();
             sendPrompt();
+            if (writtenSpeech == null || writtenSpeech.isBlank()) {
+                placeFound = false;
+                return false;
+            }
             placeFound = true;
             return true;
 
@@ -225,8 +186,11 @@ public class API {
 
     public void getCityByText(String text) {
         placeFound = true;
+        if (chiaveMancante(MAPS_API_KEY, "MAPS_API_KEY")) {
+            return;
+        }
         try {
-            String urlString = "https://maps.googleapis.com/maps/api/geocode/json?address=" + URLEncoder.encode(text, "UTF-8") + "&key=" + MAPS_API_KEY;
+            String urlString = "https://maps.googleapis.com/maps/api/geocode/json?address=" + URLEncoder.encode(text, StandardCharsets.UTF_8) + "&key=" + MAPS_API_KEY;
             URL url = new URL(urlString);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -242,9 +206,10 @@ public class API {
             JsonObject jsonObject = JsonParser.parseString(response.toString()).getAsJsonObject();
             JsonArray results = jsonObject.getAsJsonArray("results");
 
-            if (results.isEmpty()) {
-                Error error = new Error("Nessun risultato trovato per: " + text);
-                error.start(new Stage());
+            if (results == null || results.isEmpty()) {
+                placeFound = false;
+                new Error("Nessun risultato trovato per: " + text).start(new Stage());
+                return;
             }
 
             JsonObject firstResult = results.get(0).getAsJsonObject();
@@ -285,6 +250,9 @@ public class API {
     }
 
     public void getSpeech() {
+        if (chiaveMancante(ELEVENLABS_API_KEY, "ELEVENLABS_API_KEY") || writtenSpeech == null) {
+            return;
+        }
 
         JSONObject json = new JSONObject();
         json.put("text", writtenSpeech);
@@ -346,7 +314,6 @@ public class API {
             if (place_id != null){
                 OkHttpClient client = new OkHttpClient();
                 String url = "https://maps.googleapis.com/maps/api/place/details/json?" + "place_id=" + place_id + "&fields=photos&key=" + MAPS_API_KEY;
-                System.out.println(url);
                 Request request = new Request.Builder().url(url).build();
                 Response response = client.newCall(request).execute();
                 assert response.body() != null;

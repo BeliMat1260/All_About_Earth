@@ -122,7 +122,7 @@ public class Home extends Application {
             double latitudine = coordinates[1];
 
             api.setLongitude(longitudine);
-            api.setLongitude(latitudine);
+            api.setLatitude(latitudine);
 
             showLoading(false);
         });

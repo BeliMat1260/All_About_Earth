@@ -163,22 +163,12 @@ public class HistoryManager {
 
 
     //Riscrive il file completo
-    public void writeFile(){
-        try {
-            if(!f.createNewFile()){
-                FileOutputStream fos = new FileOutputStream(f);
-                ObjectOutputStream oos = new ObjectOutputStream(fos);
-
-                oos.writeObject(data);
-                oos.flush();
-
-                fos.close();
-                oos.close();
-            }
+    public void writeFile() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f))) {
+            oos.writeObject(data);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     /*  Todo: trovare latitudine e longitudine
