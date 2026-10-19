@@ -41,8 +41,7 @@ public class API {
     public API() {}
 
     private static String chiave(String nome) {
-        String valore = System.getenv(nome);
-        return valore == null ? "" : valore.trim();
+        return EnvFile.valore(nome);
     }
 
     private boolean chiaveMancante(String chiave, String nome) {
@@ -51,7 +50,7 @@ public class API {
         }
         placeFound = false;
         try {
-            new Error("Manca la variabile d'ambiente " + nome + ".").start(new Stage());
+            new Error("Manca " + nome + " nel file .env.").start(new Stage());
         } catch (Exception ignored) {
         }
         return true;

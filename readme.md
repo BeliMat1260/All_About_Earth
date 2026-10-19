@@ -21,21 +21,15 @@ L'applicazione è strutturata con un'architettura solida basata su Manager e Mod
 
 ## Chiavi API
 
-Le chiavi non stanno nel codice. Prima di avviare l'app imposta le variabili d'ambiente:
+Le chiavi stanno nel file `.env`, nella cartella del progetto:
 
-* `MAPS_API_KEY` per Google Maps
-* `GEMINI_API_KEY` per il testo
-* `ELEVENLABS_API_KEY` per l'audio
-
-Su Windows, in PowerShell:
-
-```powershell
-$env:MAPS_API_KEY = "la-tua-chiave"
-$env:GEMINI_API_KEY = "la-tua-chiave"
-$env:ELEVENLABS_API_KEY = "la-tua-chiave"
+```text
+MAPS_API_KEY=
+GEMINI_API_KEY=
+ELEVENLABS_API_KEY=
 ```
 
-Se una chiave è già finita in una commit precedente, va revocata dal fornitore e ricreata. I file `User.ser`, `ActualUser.ser` e `History.ser` restano solo in locale.
+`.env` è già presente in locale ed è ignorato da Git. Il modello committato è `.env.example`. Se una chiave è già finita in una commit precedente, va revocata dal fornitore e ricreata. I file `User.ser`, `ActualUser.ser` e `History.ser` restano solo in locale.
 
 ## 📁 Struttura del Progetto
 
@@ -65,7 +59,7 @@ Il progetto utilizza **Maven Wrapper**, quindi non hai bisogno di avere Maven pr
    cd All_About_Earth
    ```
 
-2. **Imposta le variabili d'ambiente** delle tre chiavi, come nella sezione sopra.
+2. **Incolla le tre chiavi** nel file `.env`, come nella sezione sopra.
 
 3. **Compila, testa ed esegui:**
    Su **Windows**:

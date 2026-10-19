@@ -2,3 +2,4 @@ target/
 *.ser
 .idea/
 .DS_Store
+.env
